@@ -1,0 +1,38 @@
+body
+{
+    background-color: antiquewhite;
+}
+
+h1
+{
+    padding-top: 50px;
+    text-align: center;
+    color: #721817;
+    font-size: 300%;
+}
+
+form
+{
+    text-align: center;
+}
+
+label
+{
+    font-size: 1.2em;
+    color: #4a4a4a;
+    font-weight: bold;
+    display: inline;
+    margin-bottom: 10px;
+}
+
+button
+{
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #721817;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
