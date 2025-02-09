@@ -4,19 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width-device-width, initial-scale = 1.0">
     <title>Wallet</title>
-    <link rel="stylesheet" href="/Users/Ashish/Desktop/wallet/static/css/styles2.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}">
 </head>
 <body>
     <header>
         <h1>Wallet</h1>
-        <h3>Welcome, {{user.username}}</h3>
+        <h3>Welcome, {{user.first_name}}</h3>
         <h4>Balance: {{user.bal}}</h4>
     </header>
     <form method="POST" action="{{  url_for('wallet_view')  }}">
         <label>Amount: </label>
-        <input type="number" name="amount" step="0.01">
+        <input type="number" name="amount" step="0.01" required>
         <button type="submit" name="deposit">Deposit</button>
         <button type="submit" name="withdraw">Withdraw</button>
     </form>
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <a href="{{ url_for('user2user') }}">Send Money</a>
+    <p><a href="{{ url_for('login') }}">Log Out</a></p>
 </body>
 </html>

@@ -1,0 +1,1 @@
+INSERT INTO transactions (sender_id, receiver_id, amount, transaction_type) VALUES (?, ?, ?, ?)

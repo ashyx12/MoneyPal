@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS wallet (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name VARCHAR(20) NOT NULL,
+    last_name VARCHAR(20),
+    username VARCHAR(20) NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    bal REAL DEFAULT 0.00
+);
