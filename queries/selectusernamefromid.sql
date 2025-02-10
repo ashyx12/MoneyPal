@@ -1,1 +1,0 @@
-SELECT username FROM wallet WHERE id = ?;

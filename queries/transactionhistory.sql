@@ -3,7 +3,7 @@ SELECT
     t.sender_id, 
     t.receiver_id, 
     t.amount, 
-    t.transaction_type, 
+    t.transaction_type,
     t.timestamp
 FROM 
     transactions t

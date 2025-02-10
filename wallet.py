@@ -28,8 +28,8 @@ def init_db():
     command.execute(create_transaction_table)
 
     db.commit()
-    create = load_sql_file('insert.sql')
-    record_transaction = load_sql_file('recordtransaction.sql')
+    # create = load_sql_file('insert.sql')
+    # record_transaction = load_sql_file('recordtransaction.sql')
 
     # for i in range(100):
     #     password = str(i + 1)
@@ -108,6 +108,9 @@ def wallet_view():
         amount = float(request.form['amount'])
 
         if 'deposit' in request.form:
+            if amount <= 0:
+                return render_template('wallet.html', user=wallet_user, error="Amount can't be Negative or Zero")
+            
             new_balance = wallet_user['bal'] + amount
 
             db = get_db()
@@ -120,8 +123,12 @@ def wallet_view():
 
             db.commit()
             db.close()
+            return redirect(url_for('wallet_view'))
 
         elif 'withdraw' in request.form:
+            if amount <= 0:
+                return render_template('wallet.html', user=wallet_user, error="Amount can't be Negative or Zero")
+            
             if wallet_user['bal'] >= amount:
                 new_balance = wallet_user['bal'] - amount
 
@@ -135,6 +142,7 @@ def wallet_view():
 
                 db.commit()
                 db.close()
+                return redirect(url_for('wallet_view'))
             else:
                 return render_template('wallet.html', user=wallet_user, error="Insufficient balance")
 
@@ -154,7 +162,7 @@ def user2user():
     user_id = session['user_id']
 
     if request.method == 'POST':
-        reciever_id = request.form['reciever_id']
+        username = request.form['username']
         amount = float(request.form['amount'])
 
         db = get_db()
@@ -167,8 +175,11 @@ def user2user():
         if wallet_user['bal'] < amount:
             return render_template('transactions.html', error="Insufficient Balance")
         
+        if amount <= 0:
+            return render_template('transactions.html', error="Amount can't be Negative or Zero")
+        
         receiver_exists = load_sql_file('selectfromusername.sql')
-        command.execute(receiver_exists, (reciever_id,))
+        command.execute(receiver_exists, (username,))
         reciever = command.fetchone()
 
         if reciever:
@@ -220,7 +231,7 @@ def transaction_history():
             final_transactions.append(transaction)
             seen.add(transaction['id'])
 
-    return render_template('transactionhistory.html', transactions = final_transactions, username = username['username'])
+    return render_template('transactionhistory.html', transactions = final_transactions, username = username['username'], id = user_id)
 
 if __name__ == '__main__':
     init_db()
