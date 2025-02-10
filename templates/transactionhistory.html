@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles4.css') }}">
+</head>
+<body>
+    <h1>Transaction History</h1>
+    <h3>Username: {{  username  }}</h3>
+    {% if transactions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Receiver ID</th>
+                    <th>Amount</th>
+                    <th>Transaction Type</th>
+                    <th>Date & Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction['receiver_id'] }}</td>
+                        <td>{{ transaction['amount'] }}</td>
+                        <td>{{  transaction['transaction_type']  }}</td>
+                        <td>{{ transaction['timestamp'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No transactions found.</p>
+    {% endif %}
+</body>
+</html>

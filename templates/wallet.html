@@ -22,7 +22,12 @@
     {% if error %}
     <p style="color: red;">{{ error }}</p>
     {% endif %}
-    <a href="{{ url_for('user2user') }}">Send Money</a>
-    <p><a href="{{ url_for('login') }}">Log Out</a></p>
+
+    <p>
+        <a href="{{ url_for('user2user') }}">Send Money</a>
+        <a href="{{  url_for('transaction_history')  }}">Transaction History</a>
+        <br>
+        <a href="{{ url_for('login') }}">Log Out</a>
+    </p>
 </body>
 </html>
