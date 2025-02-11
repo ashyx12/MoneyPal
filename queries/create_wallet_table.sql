@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS wallet 
+(
+    wallet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(20) NOT NULL UNIQUE,
+    bal REAL DEFAULT 0.00,
+    FOREIGN KEY (wallet_id) REFERENCES users(user_id)
+);

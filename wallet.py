@@ -21,15 +21,30 @@ def init_db():
     db = get_db()
     command = db.cursor()
 
-    create_table = load_sql_file('createtable.sql')
-    command.execute(create_table)
+    create_user_sql = load_sql_file('create_users_table.sql')
+    command.execute(create_user_sql)
 
-    create_transaction_table = load_sql_file('createtransactiontable.sql')
-    command.execute(create_transaction_table)
+    create_table_sql = load_sql_file('create_wallet_table.sql')
+    command.execute(create_table_sql)
+
+    create_trigger_sql = load_sql_file('create_user_wallet_trigger.sql')
+    command.execute(create_trigger_sql)
+
+    create_transaction_table_sql = load_sql_file('create_transactions_table.sql')
+    command.execute(create_transaction_table_sql)
+
+    # create_deposit_trigger = load_sql_file('deposit_trigger.sql')
+    # command.execute(create_deposit_trigger)
+
+    # create_withdraw_trigger = load_sql_file('withdraw_trigger.sql')
+    # command.execute(create_withdraw_trigger)
+
+    # create_user2user_trigger = load_sql_file('user2user_trigger.sql')
+    # command.execute(create_user2user_trigger)
 
     db.commit()
-    # create = load_sql_file('insert.sql')
-    # record_transaction = load_sql_file('recordtransaction.sql')
+    # create = load_sql_file('insert_into_users.sql')
+    # record_transaction = load_sql_file('record_transaction.sql')
 
     # for i in range(100):
     #     password = str(i + 1)
@@ -57,14 +72,14 @@ def signup():
         db = get_db()
         command = db.cursor()
 
-        insert = load_sql_file('insert.sql')
+        insert_sql = load_sql_file('insert_into_users.sql')
 
         try:
-            command.execute(insert, (first_name, last_name, username, hashed_password, 0.00)) 
+            command.execute(insert_sql, (first_name, last_name, username, hashed_password))
             db.commit()
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
-            return render_template('signup.html', error="Username Unavailable")
+            return render_template('signup.html', error="Username Taken!")
         finally:
             db.close()
 
@@ -79,13 +94,13 @@ def login():
         db = get_db()
         command = db.cursor()
 
-        select_acc = load_sql_file('selectfromusername.sql')
-        command.execute(select_acc, (username,))
+        select_acc_sql = load_sql_file('select_from_username_in_users.sql')
+        command.execute(select_acc_sql, (username,))
         wallet_user = command.fetchone()
         db.close()
 
-        if wallet_user and check_password_hash(wallet_user['password'], password):
-            session['user_id'] = wallet_user['id']
+        if wallet_user and check_password_hash(wallet_user['password_hashed'], password):
+            session['user_id'] = wallet_user['user_id']
             return redirect(url_for('wallet_view'))
         else:
             return render_template('login.html', error="Invalid Username or Password")
@@ -96,12 +111,20 @@ def login():
 def wallet_view():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    
+    user_id = session['user_id']
 
     db = get_db()
     command = db.cursor()
-    select_acc = load_sql_file('selectfromid.sql')
-    command.execute(select_acc, (session['user_id'],))
-    wallet_user = command.fetchone()
+
+    select_acc_sql = load_sql_file('select_from_id_in_users.sql')
+    command.execute(select_acc_sql, (session['user_id'],))
+    user_users = command.fetchone()
+
+    select_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
+    command.execute(select_wallet_sql, (session['user_id'],))
+    user_wallet = command.fetchone()
+    
     db.close()
 
     if request.method == 'POST':
@@ -109,17 +132,18 @@ def wallet_view():
 
         if 'deposit' in request.form:
             if amount <= 0:
-                return render_template('wallet.html', user=wallet_user, error="Amount can't be Negative or Zero")
+                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Amount can't be Negative or Zero")
             
-            new_balance = wallet_user['bal'] + amount
+            new_balance = user_wallet['bal'] + amount
 
             db = get_db()
             command = db.cursor()
 
-            update_bal = load_sql_file('updatebalance.sql')
-            command.execute(update_bal, (new_balance, wallet_user['id']))
-            record_transaction = load_sql_file('recordtransaction.sql')
-            command.execute(record_transaction, (wallet_user['id'], None, amount, 'Deposit'))
+            update_bal_sql = load_sql_file('update_balance.sql')
+            command.execute(update_bal_sql, (new_balance, user_wallet['wallet_id']))
+
+            record_transaction = load_sql_file('record_transaction.sql')
+            command.execute(record_transaction, (user_id, None, amount, 'Deposit'))
 
             db.commit()
             db.close()
@@ -127,32 +151,37 @@ def wallet_view():
 
         elif 'withdraw' in request.form:
             if amount <= 0:
-                return render_template('wallet.html', user=wallet_user, error="Amount can't be Negative or Zero")
+                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Amount can't be Negative or Zero")
             
-            if wallet_user['bal'] >= amount:
-                new_balance = wallet_user['bal'] - amount
+            if user_wallet['bal'] >= amount:
+                new_balance = user_wallet['bal'] - amount
 
                 db = get_db()
                 command = db.cursor()
 
-                update_bal = load_sql_file('updatebalance.sql')
-                command.execute(update_bal, (new_balance, wallet_user['id']))
-                record_transaction = load_sql_file('recordtransaction.sql')
-                command.execute(record_transaction, (wallet_user['id'], None, amount, 'Withdraw'))
+                update_bal_sql = load_sql_file('update_balance.sql')
+                command.execute(update_bal_sql, (new_balance, user_wallet['wallet_id']))
+
+                record_transaction = load_sql_file('record_transaction.sql')
+                command.execute(record_transaction, (user_id, None, amount, 'Withdraw'))
 
                 db.commit()
                 db.close()
                 return redirect(url_for('wallet_view'))
             else:
-                return render_template('wallet.html', user=wallet_user, error="Insufficient balance")
+                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Insufficient balance")
 
     db = get_db()
     command = db.cursor()
-    command.execute(select_acc, (session['user_id'],))
-    wallet_user = command.fetchone()
+
+    command.execute(select_acc_sql, (session['user_id'],))
+    user_wallet = command.fetchone()
+    command.execute(select_wallet_sql, (session['user_id'],))
+    user_wallet = command.fetchone()
+
     db.close()
 
-    return render_template('wallet.html', user=wallet_user)
+    return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet)
 
 @wallet.route('/user2user', methods=['GET', 'POST'])
 def user2user():
@@ -167,31 +196,35 @@ def user2user():
 
         db = get_db()
         command = db.cursor()
-        sender_acc = load_sql_file('selectfromid.sql')
+        sender_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
 
-        command.execute(sender_acc, (user_id,))
-        wallet_user = command.fetchone()
+        command.execute(sender_wallet_sql, (user_id,))
+        sender_wallet = command.fetchone()
 
-        if wallet_user['bal'] < amount:
+        if sender_wallet['bal'] < amount:
             return render_template('transactions.html', error="Insufficient Balance")
         
         if amount <= 0:
             return render_template('transactions.html', error="Amount can't be Negative or Zero")
         
-        receiver_exists = load_sql_file('selectfromusername.sql')
-        command.execute(receiver_exists, (username,))
-        reciever = command.fetchone()
+        receiver_users_sql = load_sql_file('select_from_username_in_users.sql')
+        command.execute(receiver_users_sql, (username,))
+        reciever_users = command.fetchone()
 
-        if reciever:
-            update_bal = load_sql_file('updatebalance.sql')
-            new_balance_sender = wallet_user['bal'] - amount
-            command.execute(update_bal, (new_balance_sender, user_id))
+        if reciever_users:
+            reciever_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
+            command.execute(reciever_wallet_sql, (reciever_users['user_id'],))
+            reciever_wallet = command.fetchone()
 
-            new_balance_receiver = reciever['bal'] + amount
-            command.execute(update_bal, (new_balance_receiver, reciever['id']))
+            update_bal_sql = load_sql_file('update_balance.sql')
+            update_sender_bal = sender_wallet['bal'] - amount
+            command.execute(update_bal_sql, (update_sender_bal, user_id))
 
-            record_transaction = load_sql_file('recordtransaction.sql')
-            command.execute(record_transaction, (user_id, reciever['id'], amount, 'User to User'))
+            update_receiver_bal = reciever_wallet['bal'] + amount
+            command.execute(update_bal_sql, (update_receiver_bal, reciever_users['user_id']))
+
+            record_transaction = load_sql_file('record_transaction.sql')
+            command.execute(record_transaction, (user_id, reciever_users['user_id'], amount, 'User to User'))
             
             db.commit()
             db.close()
@@ -213,12 +246,12 @@ def transaction_history():
     db = get_db()
     command = db.cursor()
 
-    history = load_sql_file('transactionhistory.sql')
-    command.execute(history, (user_id, user_id))
-    transactions = command.fetchall()
+    transaction_history_sql = load_sql_file('fetch_transaction_history.sql')
+    command.execute(transaction_history_sql, (user_id, user_id))
+    transaction_history = command.fetchall()
 
-    username_fetch = load_sql_file('selectfromid.sql')
-    command.execute(username_fetch, (user_id,))
+    user_users_sql = load_sql_file('select_from_id_in_users.sql')
+    command.execute(user_users_sql, (user_id,))
     username = command.fetchone()
 
     db.close
@@ -226,10 +259,10 @@ def transaction_history():
     final_transactions = []
     seen = set()
 
-    for transaction in transactions:
-        if transaction['id'] not in seen:
+    for transaction in transaction_history:
+        if transaction['transaction_id'] not in seen:
             final_transactions.append(transaction)
-            seen.add(transaction['id'])
+            seen.add(transaction['transaction_id'])
 
     return render_template('transactionhistory.html', transactions = final_transactions, username = username['username'], id = user_id)
 

@@ -1,0 +1,1 @@
+SELECT * FROM wallet where wallet_id = ?

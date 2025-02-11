@@ -2,26 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width-device-width, initial-scale = 1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles1.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Login</h1>
-    </header>
-    <form method="POST" action="{{  url_for('login')  }}">
-        <label>Username</label>
-        <input type="text" name="username" required><br>
-        <label>Password</label>
-        <input type="password" name="password" required><br>
-        <button type="submit">Login</button>
-    </form>
+    <div class="wallet-container">
+        <div class="wallet-header">
+            <h1>Login</h1>
+        </div>
 
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    
-    <p>Don't have an Account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+        <form method="POST" action="{{  url_for('login')  }}">
+            <div class="form-group">
+                <i class="fas fa-at input-icon"></i>
+                <input type="text" placeholder="Username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" placeholder="Password" name="password" required>
+            </div>
+
+            <button type="submit">Login</button>
+
+            <div class="login-link">
+                <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign Up here</a></p>
+            </div>
+            
+            {% if error %}
+                <p class="error-message">{{ error }}</p>
+            {% endif %}
+        </form>
+    </div>
 </body>
 </html>

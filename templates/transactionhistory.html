@@ -14,6 +14,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Transaction ID</th>
                     <th>Receiver ID</th>
                     <th>Amount</th>
                     <th>Transaction Type</th>
@@ -23,9 +24,10 @@
             <tbody>
                     {% for transaction in transactions %}
                     <tr>
-                        {% if transaction['receiver_id'] == id | string %}
+                        <td>{{  transaction['transaction_id']  }}</td>
+                        {% if transaction['receiver_id'] == id %}
                             <td>You</td>
-                        {%else%}
+                        {% else %}
                             <td>{{ transaction['receiver_id'] }}</td>
                         {% endif %}
 
@@ -38,7 +40,7 @@
 
                         {% elif transaction['transaction_type'] == 'User to User'%}
                         
-                            {% if transaction['receiver_id'] == id | string %}
+                            {% if transaction['receiver_id'] == id %}
                                 <td style="color: #08f308;">{{ transaction['amount'] }}</td>
                             {% else %}
                                 <td style="color: red">{{ transaction['amount'] }}</td>

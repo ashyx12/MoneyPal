@@ -1,1 +1,0 @@
-SELECT * FROM wallet WHERE id = ?

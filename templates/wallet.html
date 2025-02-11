@@ -2,32 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width-device-width, initial-scale = 1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Wallet</h1>
-        <h3>Welcome, {{user.first_name}}</h3>
-        <h4>Balance: {{user.bal}}</h4>
-    </header>
-    <form method="POST" action="{{  url_for('wallet_view')  }}">
-        <label>Amount: </label>
-        <input type="number" name="amount" step="0.01" required>
-        <button type="submit" name="deposit">Deposit</button>
-        <button type="submit" name="withdraw">Withdraw</button>
-    </form>
+    <div class="wallet-container">
+        <header>
+            <h1>Welcome, {{user_users.first_name}}</h1>
+            <h3>Balance: {{user_wallet.bal}}</h3>
+        </header>
+        <form method="POST" action="{{ url_for('wallet_view') }}">
+            <div class="form-group">
+                <div class="input-container">
+                    <span class="currency-sign">$</span>
+                    <input type="number" id="amount" name="amount" step="0.01" required placeholder="Enter amount">
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="submit" name="deposit">Deposit</button>
+                <button type="submit" name="withdraw">Withdraw</button>
+            </div>
+        </form>
 
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %}
 
-    <p>
-        <a href="{{ url_for('user2user') }}">Send Money</a>
-        <a href="{{  url_for('transaction_history')  }}">Transaction History</a>
-        <br>
-        <a href="{{ url_for('login') }}">Log Out</a>
-    </p>
+        <div class="links">
+            <a href="{{ url_for('user2user') }}">Send Money</a>
+            <a href="{{ url_for('transaction_history') }}">Transaction History</a>
+            <a href="{{ url_for('login') }}">Log Out</a>
+        </div>
+    </div>
 </body>
 </html>

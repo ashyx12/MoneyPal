@@ -1,0 +1,1 @@
+UPDATE wallet SET bal = ? WHERE wallet_id = ?

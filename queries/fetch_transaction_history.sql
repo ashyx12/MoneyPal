@@ -1,5 +1,5 @@
 SELECT
-    t.id,
+    t.transaction_id,
     t.sender_id, 
     t.receiver_id, 
     t.amount, 

@@ -1,1 +1,0 @@
-INSERT INTO wallet (first_name, last_name, username, password, bal) VALUES (?, ?, ?, ?, ?);
