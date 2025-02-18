@@ -33,26 +33,26 @@ def init_db():
     create_transaction_table_sql = load_sql_file('create_transactions_table.sql')
     command.execute(create_transaction_table_sql)
 
-    # create_deposit_trigger = load_sql_file('deposit_trigger.sql')
-    # command.execute(create_deposit_trigger)
+    create_deposit_trigger = load_sql_file('deposit_trigger.sql')
+    command.execute(create_deposit_trigger)
 
-    # create_withdraw_trigger = load_sql_file('withdraw_trigger.sql')
-    # command.execute(create_withdraw_trigger)
+    create_withdraw_trigger = load_sql_file('withdraw_trigger.sql')
+    command.execute(create_withdraw_trigger)
 
-    # create_user2user_trigger = load_sql_file('user2user_trigger.sql')
-    # command.execute(create_user2user_trigger)
+    create_user2user_trigger = load_sql_file('user2user_trigger.sql')
+    command.execute(create_user2user_trigger)
 
     db.commit()
-    # create = load_sql_file('insert_into_users.sql')
-    # record_transaction = load_sql_file('record_transaction.sql')
+    # insert_sql = load_sql_file('insert_into_users.sql')
 
     # for i in range(100):
     #     password = str(i + 1)
     #     hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
 
     #     try:
-    #         command.execute(create, (f'First{i+1}', f'Last{i+1}', i+1, hashed_password, 10000.00))
-    #         command.execute(record_transaction, (i+1, None, 10000.00, 'Deposit'))
+    #         command.execute(insert_sql, (f'First{i+1}', f'Last{i+1}', i+1, hashed_password))
+    #         update_bal_sql = load_sql_file('update_balance.sql')
+    #         command.execute(update_bal_sql, (float(10000), int(1), None, int(i+1)))
     #         db.commit()
     #     except sqlite3.IntegrityError:
     #         db.commit()
@@ -140,10 +140,10 @@ def wallet_view():
             command = db.cursor()
 
             update_bal_sql = load_sql_file('update_balance.sql')
-            command.execute(update_bal_sql, (new_balance, user_wallet['wallet_id']))
+            command.execute(update_bal_sql, (float(new_balance), int(1), None, int(user_wallet['wallet_id'])))
 
-            record_transaction = load_sql_file('record_transaction.sql')
-            command.execute(record_transaction, (user_id, None, amount, 'Deposit'))
+            # record_transaction = load_sql_file('record_transaction.sql')
+            # command.execute(record_transaction, (user_id, None, amount, 'Deposit'))
 
             db.commit()
             db.close()
@@ -160,10 +160,10 @@ def wallet_view():
                 command = db.cursor()
 
                 update_bal_sql = load_sql_file('update_balance.sql')
-                command.execute(update_bal_sql, (new_balance, user_wallet['wallet_id']))
+                command.execute(update_bal_sql, (new_balance, int(2), None, user_wallet['wallet_id']))
 
-                record_transaction = load_sql_file('record_transaction.sql')
-                command.execute(record_transaction, (user_id, None, amount, 'Withdraw'))
+                # record_transaction = load_sql_file('record_transaction.sql')
+                # command.execute(record_transaction, (user_id, None, amount, 'Withdraw'))
 
                 db.commit()
                 db.close()
@@ -218,13 +218,13 @@ def user2user():
 
             update_bal_sql = load_sql_file('update_balance.sql')
             update_sender_bal = sender_wallet['bal'] - amount
-            command.execute(update_bal_sql, (update_sender_bal, user_id))
+            command.execute(update_bal_sql, (float(update_sender_bal), int(3), int(reciever_users['user_id']), int(user_id)))
 
             update_receiver_bal = reciever_wallet['bal'] + amount
-            command.execute(update_bal_sql, (update_receiver_bal, reciever_users['user_id']))
+            command.execute(update_bal_sql, (float(update_receiver_bal), int(3), None, int(reciever_users['user_id'])))
 
-            record_transaction = load_sql_file('record_transaction.sql')
-            command.execute(record_transaction, (user_id, reciever_users['user_id'], amount, 'User to User'))
+            # record_transaction = load_sql_file('record_transaction.sql')
+            # command.execute(record_transaction, (user_id, reciever_users['user_id'], amount, 'User to User'))
             
             db.commit()
             db.close()

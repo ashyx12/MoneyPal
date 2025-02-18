@@ -1,1 +1,1 @@
-UPDATE wallet SET bal = ? WHERE wallet_id = ?
+UPDATE wallet SET bal = ?, last_transaction_type = ?, last_reciever_id = ? WHERE wallet_id = ?
