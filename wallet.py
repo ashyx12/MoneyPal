@@ -57,7 +57,10 @@ def init_db():
     #     except sqlite3.IntegrityError:
     #         db.commit()
     db.close()
-    
+
+@wallet.route('/')
+def home():
+    return redirect('/signup')
 
 @wallet.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -268,4 +271,4 @@ def transaction_history():
 
 if __name__ == '__main__':
     init_db()
-    wallet.run(debug=True)
+    wallet.run(host='0.0.0.0', port=5000, debug=False)
