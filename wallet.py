@@ -110,6 +110,10 @@ def login():
     
     return render_template('login.html')
 
+@wallet.route('/forgotpassword')
+def forgotpassword():
+    return render_template('forgotpassword.html')
+
 @wallet.route('/wallet', methods=['GET', 'POST'])
 def wallet_view():
     if 'user_id' not in session:
