@@ -190,6 +190,50 @@ def wallet_view():
 
     return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet)
 
+@wallet.route('/deleteacc', methods=['GET', 'POST'])
+def deleteacc():
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password1 = request.form['password1']
+        password2 = request.form['password2']
+
+        if password1 != password2:
+            return render_template('deleteacc.html', error="Passwords Don't Match")
+
+        db = get_db()
+        command = db.cursor()
+
+        select_acc_sql = load_sql_file('select_from_username_in_users.sql')
+        command.execute(select_acc_sql, (username,))
+        wallet_user = command.fetchone()
+
+        select_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
+        command.execute(select_wallet_sql, (username,))
+        wallet_acc = command.fetchone()
+
+        if wallet_acc['bal'] > 0:
+            return render_template('deleteacc.html', error="Balance must be 0")
+        
+
+        if wallet_user and check_password_hash(wallet_user['password_hashed'], password1) and session['user_id'] == wallet_user['user_id']:
+            try:
+                delete_user_sql = load_sql_file('delete_from_users.sql')
+                command.execute(delete_user_sql, (wallet_user['user_id'],))
+                delete_user_sql = load_sql_file('delete_from_wallet.sql')
+                command.execute(delete_user_sql, (wallet_user['user_id'],))
+                db.commit()
+                db.close()
+                return redirect(url_for('signup'))
+            except Exception as e:
+                db.close()
+                return render_template('deleteacc.html', error="Operation Failed")
+        else:
+            db.close()
+            return render_template('deleteacc.html', error="Invalid Username or Password")
+        
+    return render_template('deleteacc.html')
+
 @wallet.route('/user2user', methods=['GET', 'POST'])
 def user2user():
     if 'user_id' not in session:
@@ -219,6 +263,9 @@ def user2user():
         reciever_users = command.fetchone()
 
         if reciever_users:
+            if reciever_users['user_id'] == session['user_id']:
+                return render_template('transactions.html', error = "can't send money to yourself")
+
             reciever_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
             command.execute(reciever_wallet_sql, (reciever_users['user_id'],))
             reciever_wallet = command.fetchone()

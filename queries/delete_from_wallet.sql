@@ -1,0 +1,1 @@
+DELETE FROM wallet WHERE wallet_id = ?
