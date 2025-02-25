@@ -153,9 +153,6 @@ def wallet_view():
             update_bal_sql = load_sql_file('update_balance.sql')
             command.execute(update_bal_sql, (float(new_balance), int(1), None, int(user_wallet['wallet_id'])))
 
-            # record_transaction = load_sql_file('record_transaction.sql')
-            # command.execute(record_transaction, (user_id, None, amount, 'Deposit'))
-
             db.commit()
             db.close()
             return redirect(url_for('wallet_view'))
@@ -172,9 +169,6 @@ def wallet_view():
 
                 update_bal_sql = load_sql_file('update_balance.sql')
                 command.execute(update_bal_sql, (new_balance, int(2), None, user_wallet['wallet_id']))
-
-                # record_transaction = load_sql_file('record_transaction.sql')
-                # command.execute(record_transaction, (user_id, None, amount, 'Withdraw'))
 
                 db.commit()
                 db.close()
@@ -280,9 +274,6 @@ def user2user():
 
             update_receiver_bal = reciever_wallet['bal'] + amount
             command.execute(update_bal_sql, (float(update_receiver_bal), int(3), None, int(reciever_users['user_id'])))
-
-            # record_transaction = load_sql_file('record_transaction.sql')
-            # command.execute(record_transaction, (user_id, reciever_users['user_id'], amount, 'User to User'))
             
             db.commit()
             db.close()
