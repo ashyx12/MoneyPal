@@ -4,36 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles1.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mcafee_fonts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/css2.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" /> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
-    <div class="wallet-container">
-        <header>
-            <h1>Welcome, {{user_users.first_name}}</h1>
-            <h3>Balance: {{user_wallet.bal}}</h3>
-        </header>
-        <form method="POST" action="{{ url_for('wallet_view') }}">
-            <div class="form-group">
-                <div class="input-container">
-                    <span class="currency-sign">$</span>
-                    <input type="number" id="amount" name="amount" step="0.01" required placeholder="Enter amount">
+    <div class="background">
+        <svg class="morphing-blob" viewBox="0 0 800 600" preserveAspectRatio="none">
+            <defs>
+                <filter id="goo">
+                    <fegaussianblur in="SourceGraphic" stdDeviation="10" result="blur"></fegaussianblur>
+                    <fecolormatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"></fecolormatrix>
+                </filter>
+                <lineargradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color: #4A00E0"></stop>
+                    <stop offset="100%" style="stop-color: #8E2DE2"></stop>
+                </lineargradient>
+                <lineargradient id="gradient2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color: #2E3192"></stop>
+                    <stop offset="100%" style="stop-color: #1BFFFF"></stop>
+                </lineargradient>
+            </defs>
+            <g filter="url(#goo)">
+                <circle class="blob blob-1" fill="url(#gradient1)" cx="400" cy="300" r="150"></circle>
+                <circle class="blob blob-2" fill="url(#gradient2)" cx="400" cy="300" r="120"></circle>
+                <circle class="blob blob-3" fill="url(#gradient1)" cx="400" cy="300" r="100"></circle>
+                <circle class="blob blob-4" fill="url(#gradient2)" cx="400" cy="300" r="80"></circle>
+            </g>
+        </svg>
+    </div>
+
+    <div class="container">
+        <div class="login-card">
+            <div class="brand">
+                <div class="logo-container">
+                    <i class="fas fa-wallet"></i>
+                    <div class="logo-rings">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
+                <h1>Welcome, {{user_users.first_name}}</h1>
+                <h3>Balance: {{user_wallet.bal}}</h3>
             </div>
-            <div class="button-group">
-                <button type="submit" name="deposit">Deposit</button>
-                <button type="submit" name="withdraw">Withdraw</button>
+
+            <form method="POST" action="{{  url_for('wallet_view')  }}">
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fa fa-dollar"></i>
+                        <input type="number" id="amount" name="amount" step="0.01" required placeholder="Enter amount">
+                    </div>
+                </div>
+
+                <div class="group">
+                    <button type="submit" name="deposit">Deposit</button>
+                    <button type="submit" name="withdraw">Withdraw</button>
+                </div>
+            </form>
+
+            {% if error %}
+                <p class="error-message">{{ error }}</p>
+            {% endif %}
+
+            <div class="signup-link">
+                <a href="{{ url_for('user2user') }}">Send Money</a><br>
+                <a href="{{ url_for('transaction_history') }}">Transaction History</a><br>
+                <a href="{{ url_for('login') }}">Log Out</a><br>
+                <a href="{{  url_for('deleteacc')  }}">Delete Account</a><br>
             </div>
-        </form>
-
-        {% if error %}
-        <p class="error-message">{{ error }}</p>
-        {% endif %}
-
-        <div class="links">
-            <a href="{{ url_for('user2user') }}">Send Money</a>
-            <a href="{{ url_for('transaction_history') }}">Transaction History</a>
-            <a href="{{ url_for('login') }}">Log Out</a>
-            <a href="{{  url_for('deleteacc')  }}">Delete Account</a>
         </div>
     </div>
 </body>

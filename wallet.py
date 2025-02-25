@@ -114,6 +114,10 @@ def login():
 def forgotpassword():
     return render_template('forgotpassword.html')
 
+@wallet.route('/lmao')
+def lmao():
+    return render_template('LMAOOO.html')
+
 @wallet.route('/wallet', methods=['GET', 'POST'])
 def wallet_view():
     if 'user_id' not in session:
