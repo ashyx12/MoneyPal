@@ -8,6 +8,7 @@ SELECT
 FROM 
     transactions t
 WHERE 
-    (t.sender_id = ?) OR (t.receiver_id = ?)
+    (t.sender_id = %s) OR (t.receiver_id = %s)
 ORDER BY 
     t.timestamp DESC;
+    

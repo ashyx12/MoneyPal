@@ -1,1 +1,1 @@
-DELETE FROM users WHERE user_id = ?
+DELETE FROM users WHERE user_id = %s;

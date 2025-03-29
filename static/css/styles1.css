@@ -84,7 +84,6 @@ body {
     }
 }
 
-
 /* Waves Animation */
 .waves {
     position: absolute;
@@ -264,18 +263,18 @@ body {
 }
 
 .logo-container {
-    display: flex;
     align-items: center;
     position: relative;
     width: 80px;
     height: 80px;
     margin: 0 auto var(--spacing-lg);
 }
-
-.logo-container h1 {
-    align-items: center;
+.logo-container h1
+{
+    position: absolute;
+    top: auto;
+    left: -18px;
 }
-
 .logo-container i {
     align-items: center;
     font-size: 40px;

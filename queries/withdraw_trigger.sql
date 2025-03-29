@@ -1,7 +1,15 @@
-CREATE TRIGGER IF NOT EXISTS withdraw_trigger
+DELIMITER //
+
+DROP TRIGGER IF EXISTS withdraw_trigger;
+
+CREATE TRIGGER withdraw_trigger
 AFTER UPDATE ON wallet
-WHEN OLD.bal > NEW.bal AND NEW.last_transaction_type = 2
+FOR EACH ROW
 BEGIN
-    INSERT INTO transactions (sender_id, receiver_id, amount, transaction_type)
-    VALUES (NEW.wallet_id, NULL, OLD.bal - NEW.bal, 'Withdraw');
-END;
+    IF OLD.bal > NEW.bal AND NEW.last_transaction_type = 2 THEN
+        INSERT INTO transactions (sender_id, receiver_id, amount, transaction_type)
+        VALUES (NEW.wallet_id, NULL, OLD.bal - NEW.bal, "Withdraw");
+    END IF;
+END //
+
+DELIMITER ;

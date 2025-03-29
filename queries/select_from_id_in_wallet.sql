@@ -1,1 +1,1 @@
-SELECT * FROM wallet where wallet_id = ?
+SELECT * FROM wallet where wallet_id = %s;

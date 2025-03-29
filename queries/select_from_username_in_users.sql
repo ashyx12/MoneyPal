@@ -1,1 +1,1 @@
-SELECT * FROM users WHERE username = ?
+SELECT * FROM users WHERE username = %s;

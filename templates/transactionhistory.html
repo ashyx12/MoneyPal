@@ -15,6 +15,7 @@
             <thead>
                 <tr>
                     <th>Transaction ID</th>
+                    <th>Sender ID</th>
                     <th>Receiver ID</th>
                     <th>Amount</th>
                     <th>Transaction Type</th>
@@ -25,11 +26,26 @@
                     {% for transaction in transactions %}
                     <tr>
                         <td>{{  transaction['transaction_id']  }}</td>
+                        {% if transaction['sender_id'] == id %}
+                            {% if transaction['transaction_type'] == 'User to User' %}
+                                <td>You</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %} 
+                        {% else %}
+                            <td>{{ transaction['sender_id'] }}</td>
+                        {% endif %}
+
                         {% if transaction['receiver_id'] == id %}
                             <td>You</td>
                         {% else %}
-                            <td>{{ transaction['receiver_id'] }}</td>
+                            {% if transaction['transaction_type'] == 'User to User' %}
+                                <td>{{ transaction['receiver_id'] }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
                         {% endif %}
+
 
 
                         {% if transaction['transaction_type'] == 'Deposit'%}

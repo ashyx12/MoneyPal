@@ -1,1 +1,1 @@
-DELETE FROM wallet WHERE wallet_id = ?
+DELETE FROM wallet WHERE wallet_id = %s;

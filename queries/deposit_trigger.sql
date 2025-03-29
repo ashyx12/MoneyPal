@@ -1,7 +1,15 @@
-CREATE TRIGGER IF NOT EXISTS deposit_trigger
+DELIMITER //
+
+DROP TRIGGER IF EXISTS deposit_trigger;
+
+CREATE TRIGGER deposit_trigger
 AFTER UPDATE ON wallet
-WHEN NEW.bal > OLD.bal AND NEW.last_transaction_type = 1
+FOR EACH ROW
 BEGIN
-    INSERT INTO transactions (sender_id, receiver_id, amount, transaction_type)
-    VALUES (NEW.wallet_id, NULL, NEW.bal - OLD.bal, 'Deposit');
-END;
+    IF NEW.bal > OLD.bal AND NEW.last_transaction_type = 1 THEN
+        INSERT INTO transactions (sender_id, receiver_id, amount, transaction_type)
+        VALUES (NEW.wallet_id, NULL, NEW.bal - OLD.bal, "Deposit");
+    END IF;
+END //
+
+DELIMITER ;
