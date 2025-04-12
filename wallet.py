@@ -25,38 +25,42 @@ def init_db():
     db = get_db()
     command = db.cursor(dictionary=True)
 
-    create_user_sql = load_sql_file('create_users_table.sql')
-    command.execute(create_user_sql)
+    # create_user_sql = load_sql_file('create_users_table.sql')
+    # command.execute(create_user_sql)
 
-    create_table_sql = load_sql_file('create_wallet_table.sql')
-    command.execute(create_table_sql)
+    # create_table_sql = load_sql_file('create_wallet_table.sql')
+    # command.execute(create_table_sql)
 
-    create_trigger_sql = load_sql_file('create_user_wallet_trigger.sql')
-    command.execute(create_trigger_sql)
+    # try:
+    #     create_trigger_sql = load_sql_file('create_user_wallet_trigger.sql')
+    #     command.execute(create_trigger_sql)
+    # except Exception as e:
+    #     print("Error creating user_wallet trigger:", e)
 
-    if not db.is_connected():
-        db.reconnect(attempts=3, delay=2)
-
-    create_transaction_table_sql = load_sql_file('create_transactions_table.sql')
-    command.execute(create_transaction_table_sql)
 
     if not db.is_connected():
         db.reconnect(attempts=3, delay=2)
 
-    create_deposit_trigger = load_sql_file('deposit_trigger.sql')
-    command.execute(create_deposit_trigger)
+    # create_transaction_table_sql = load_sql_file('create_transactions_table.sql')
+    # command.execute(create_transaction_table_sql)
 
     if not db.is_connected():
         db.reconnect(attempts=3, delay=2)
 
-    create_withdraw_trigger = load_sql_file('withdraw_trigger.sql')
-    command.execute(create_withdraw_trigger)
+    # create_deposit_trigger = load_sql_file('deposit_trigger.sql')
+    # command.execute(create_deposit_trigger)
 
-    if not db.is_connected():
-        db.reconnect(attempts=3, delay=2)
+    # if not db.is_connected():
+    #     db.reconnect(attempts=3, delay=2)
 
-    create_user2user_trigger = load_sql_file('user2user_trigger.sql')
-    command.execute(create_user2user_trigger)
+    # create_withdraw_trigger = load_sql_file('withdraw_trigger.sql')
+    # command.execute(create_withdraw_trigger)
+
+    # if not db.is_connected():
+    #     db.reconnect(attempts=3, delay=2)
+
+    # create_user2user_trigger = load_sql_file('user2user_trigger.sql')
+    # command.execute(create_user2user_trigger)
 
     # insert_sql = load_sql_file('insert_into_users.sql')
     # update_bal_sql = load_sql_file('update_balance.sql')
