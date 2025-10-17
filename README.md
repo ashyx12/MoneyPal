@@ -49,7 +49,7 @@ To run MoneyPal locally, follow these steps:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [<your-repository-url>](https://github.com/ashyx12/MoneyPal.git)
+    git clone https://github.com/ashyx12/MoneyPal.git
     cd moneypal
     ```
 2.  **Install the required packages:**
