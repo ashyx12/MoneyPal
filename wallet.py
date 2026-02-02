@@ -104,16 +104,20 @@ def signup():
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
 
         db = get_db()
+        db.start_transaction()
         command = db.cursor(dictionary=True)
 
-        insert_sql = load_sql_file('insert_into_users.sql')
-
         try:
+            insert_sql = load_sql_file('insert_into_users.sql')
             command.execute(insert_sql, (first_name, last_name, username, hashed_password))
             db.commit()
             return redirect(url_for('login'))
         except mysql.connector.IntegrityError:
+            db.rollback()
             return render_template('signup.html', error="Username Taken!")
+        except Exception:
+            db.rollback()
+            return render_template('signup.html', error="Something Went Wronf")
         finally:
             db.close()
 
@@ -151,74 +155,59 @@ def wallet_view():
         return redirect(url_for('login'))
     
     user_id = session['user_id']
-
     db = get_db()
     command = db.cursor(dictionary=True)
 
-    select_acc_sql = load_sql_file('select_from_id_in_users.sql')
-    command.execute(select_acc_sql, (session['user_id'],))
+    command.execute(load_sql_file('select_from_id_in_users.sql'), (user_id,))
     user_users = command.fetchone()
-
-    select_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
-    command.execute(select_wallet_sql, (session['user_id'],))
+    command.execute(load_sql_file('select_from_id_in_wallet.sql'), (user_id,))
     user_wallet = command.fetchone()
-    
-    db.close()
 
     if request.method == 'POST':
         amount = float(request.form['amount'])
-
-        if 'deposit' in request.form:
-            if amount <= 0:
-                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Amount can't be Negative or Zero")
+        
+        try:
+            db.start_transaction()
             
-            new_balance = float(user_wallet['bal']) + amount
+            command.execute("SELECT bal, wallet_id FROM wallet WHERE wallet_id = %s FOR UPDATE", (user_id,))
+            current_wallet = command.fetchone()
 
-            db = get_db()
-            command = db.cursor(dictionary=True)
+            if 'deposit' in request.form:
+                if amount <= 0:
+                    db.rollback()
+                    return render_template('wallet.html', user_users=user_users, user_wallet=user_wallet, error="Invalid Amount")
+                
+                new_balance = float(current_wallet['bal']) + amount
+                update_bal_sql = load_sql_file('update_balance.sql')
+                command.execute(update_bal_sql, (float(new_balance), int(1), None, int(user_wallet['wallet_id'])))
+                db.commit()
 
-            update_bal_sql = load_sql_file('update_balance.sql')
-            command.execute(update_bal_sql, (float(new_balance), int(1), None, int(user_wallet['wallet_id'])))
+            elif 'withdraw' in request.form:
+                if amount <= 0 or current_wallet['bal'] < amount:
+                    db.rollback()
+                    return render_template('wallet.html', user_users=user_users, user_wallet=user_wallet, error="Insufficient funds or invalid amount")
+                
+                new_balance = float(current_wallet['bal']) - amount
+                update_bal_sql = load_sql_file('update_balance.sql')
+                command.execute(update_bal_sql, (new_balance, int(2), None, user_wallet['wallet_id']))
+                db.commit() 
 
-            db.commit()
             db.close()
             return redirect(url_for('wallet_view'))
 
-        elif 'withdraw' in request.form:
-            if amount <= 0:
-                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Amount can't be Negative or Zero")
-            
-            if user_wallet['bal'] >= amount:
-                new_balance = float(user_wallet['bal']) - amount
-
-                db = get_db()
-                command = db.cursor(dictionary=True)
-
-                update_bal_sql = load_sql_file('update_balance.sql')
-                command.execute(update_bal_sql, (new_balance, int(2), None, user_wallet['wallet_id']))
-
-                db.commit()
+        except Exception as e:
+            db.rollback()
+            return render_template('wallet.html', user_users=user_users, user_wallet=user_wallet, error="System Error")
+        finally:
+            if db.is_connected():
                 db.close()
-                return redirect(url_for('wallet_view'))
-            else:
-                return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet, error="Insufficient balance")
-
-    db = get_db()
-    command = db.cursor(dictionary=True)
-
-    command.execute(select_acc_sql, (session['user_id'],))
-    user_wallet = command.fetchone()
-    command.execute(select_wallet_sql, (session['user_id'],))
-    user_wallet = command.fetchone()
 
     db.close()
-
-    return render_template('wallet.html', user_users=user_users, user_wallet = user_wallet)
+    return render_template('wallet.html', user_users=user_users, user_wallet=user_wallet)
 
 @wallet.route('/deleteacc', methods=['GET', 'POST'])
 def deleteacc():
     if request.method == 'POST':
-
         username = request.form['username']
         password1 = request.form['password1']
         password2 = request.form['password2']
@@ -227,27 +216,34 @@ def deleteacc():
             return render_template('deleteacc.html', error="Passwords Don't Match")
 
         db = get_db()
+        db.start_transaction()
         command = db.cursor(dictionary=True)
 
-        select_acc_sql = load_sql_file('select_from_username_in_users.sql')
-        command.execute(select_acc_sql, (username,))
-        wallet_user = command.fetchone()       
+        try:
+            select_acc_sql = load_sql_file('select_from_username_in_users.sql')
+            command.execute(select_acc_sql, (username,))
+            wallet_user = command.fetchone()       
 
-        if wallet_user and check_password_hash(wallet_user['password_hashed'], password1) and session['user_id'] == wallet_user['user_id']:
-            try:
+            if wallet_user and check_password_hash(wallet_user['password_hashed'], password1) and session['user_id'] == wallet_user['user_id']:
+                delete_wallet_sql = load_sql_file('delete_from_wallet.sql')
+                command.execute(delete_wallet_sql, (wallet_user['user_id'],))
+
                 delete_user_sql = load_sql_file('delete_from_users.sql')
                 command.execute(delete_user_sql, (wallet_user['user_id'],))
-                delete_user_sql = load_sql_file('delete_from_wallet.sql')
-                command.execute(delete_user_sql, (wallet_user['user_id'],))
+                
                 db.commit()
-                db.close()
+                session.clear() 
                 return redirect(url_for('signup'))
-            except Exception as e:
-                db.close()
-                return render_template('deleteacc.html', error="Operation Failed")
-        else:
+            else:
+                db.rollback()
+                return render_template('deleteacc.html', error="Invalid Username or Password")
+
+        except Exception as e:
+            db.rollback()
+            print(f"Delete failed: {e}")
+            return render_template('deleteacc.html', error="Operation Failed")
+        finally:
             db.close()
-            return render_template('deleteacc.html', error="Invalid Username or Password")
         
     return render_template('deleteacc.html')
 
@@ -263,44 +259,44 @@ def user2user():
         amount = float(request.form['amount'])
 
         db = get_db()
+        db.start_transaction()
         command = db.cursor(dictionary=True)
-        sender_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
 
-        command.execute(sender_wallet_sql, (user_id,))
-        sender_wallet = command.fetchone()
+        try:
+            command.execute("SELECT bal FROM wallet WHERE wallet_id = %s FOR UPDATE", (user_id,))
+            sender_wallet = command.fetchone()
 
-        if sender_wallet['bal'] < amount:
-            return render_template('transactions.html', error="Insufficient Balance")
-        
-        if amount <= 0:
-            return render_template('transactions.html', error="Amount can't be Negative or Zero")
-        
-        receiver_users_sql = load_sql_file('select_from_username_in_users.sql')
-        command.execute(receiver_users_sql, (username,))
-        reciever_users = command.fetchone()
+            command.execute("SELECT wallet_id, bal FROM wallet WHERE username = %s FOR UPDATE", (username,))
+            receiver_wallet = command.fetchone()
 
-        if reciever_users:
-            if reciever_users['user_id'] == session['user_id']:
-                return render_template('transactions.html', error = "can't send money to yourself")
+            if not receiver_wallet:
+                db.rollback()
+                return render_template('transactions.html', error="Receiver Not Found")
+            
+            if receiver_wallet['wallet_id'] == user_id:
+                db.rollback()
+                return render_template('transactions.html', error="Cannot send to yourself")
 
-            reciever_wallet_sql = load_sql_file('select_from_id_in_wallet.sql')
-            command.execute(reciever_wallet_sql, (reciever_users['user_id'],))
-            reciever_wallet = command.fetchone()
+            if sender_wallet['bal'] < amount or amount <= 0:
+                db.rollback()
+                return render_template('transactions.html', error="Insufficient Balance or Invalid Amount")
 
             update_bal_sql = load_sql_file('update_balance.sql')
-            update_sender_bal = float(sender_wallet['bal']) - amount
-            command.execute(update_bal_sql, (float(update_sender_bal), int(3), int(reciever_users['user_id']), int(user_id)))
-
-            update_receiver_bal = float(reciever_wallet['bal']) + amount
-            command.execute(update_bal_sql, (float(update_receiver_bal), int(3), None, int(reciever_users['user_id'])))
             
-            db.commit()
-            db.close()
+            new_sender_bal = float(sender_wallet['bal']) - amount
+            command.execute(update_bal_sql, (new_sender_bal, 3, receiver_wallet['wallet_id'], user_id))
 
+            new_receiver_bal = float(receiver_wallet['bal']) + amount
+            command.execute(update_bal_sql, (new_receiver_bal, 3, None, receiver_wallet['wallet_id']))
+
+            db.commit()
             return render_template('transactions.html', success="Transaction Successful!")
-        else:
+
+        except Exception as e:
+            db.rollback()
+            return render_template('transactions.html', error="Transaction Failed")
+        finally:
             db.close()
-            return render_template('transactions.html', error="Reciever Not Found")
 
     return render_template('transactions.html')
 
